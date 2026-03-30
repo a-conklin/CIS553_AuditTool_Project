@@ -1,0 +1,47 @@
+<div class="navbar">
+    <div class="title">Supplier Audit Portal</div>
+    <div class="nav-links">
+        <a href="{{ url_for('supplier_home') }}">Home</a>
+        <a href="{{ url_for('supplier_home') }}#audits">My Audits</a>
+        <span class="user">Hi, {{ session['username'] }}</span>
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </div>
+</div>
+
+<style>
+.navbar {
+    background-color: #1F3A5F; /* slightly different color to distinguish */
+    color: white;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar .title {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.navbar .nav-links {
+    display: flex;
+    align-items: center;
+}
+
+.navbar .nav-links a {
+    color: white;
+    text-decoration: none;
+    margin-left: 20px;
+    font-size: 14px;
+}
+
+.navbar .nav-links a:hover {
+    opacity: 0.75;
+}
+
+.navbar .user {
+    margin-left: 20px;
+    font-size: 14px;
+    opacity: 0.9;
+}
+</style>

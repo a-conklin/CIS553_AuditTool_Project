@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Supplier Dashboard</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+        }
+
+        /* ===== Top Banner ===== */
+        .navbar {
+            background-color: #2C3E50;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar .title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .navbar .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+        }
+
+        /* ===== Content ===== */
+        .container {
+            padding: 40px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        h2 {
+            margin-bottom: 15px;
+            color: #2C3E50;
+        }
+
+        .info-row {
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        .audit-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .audit-table th,
+        .audit-table td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .audit-table th {
+            background-color: #f0f2f5;
+        }
+
+        .status {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            color: white;
+        }
+
+        .status.draft {
+            background-color: #f39c12;
+        }
+
+        .status.complete {
+            background-color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+
+    {% include "supplier_navbar.html" %}
+
+    <div class="container">
+
+        <!-- Welcome -->
+        <div class="card">
+            <h1>Welcome, {{ session['username'] }}</h1>
+            <p>This tool will allow you to view your audit results.</p>
+        </div>
+
+        <!-- Supplier Info -->
+        <div class="card">
+            <h2>Your Supplier Information</h2>
+
+            <div class="info-row"><strong>Name:</strong> {{ supplier.name }}</div>
+            <div class="info-row"><strong>Address:</strong> {{ supplier.address }}</div>
+            <div class="info-row"><strong>City:</strong> {{ supplier.city }}</div>
+            <div class="info-row"><strong>State:</strong> {{ supplier.state }}</div>
+            <div class="info-row"><strong>Country:</strong> {{ supplier.country }}</div>
+            <div class="info-row"><strong>Zip:</strong> {{ supplier.zip }}</div>
+        </div>
+
+        <!-- Audits -->
+        <div class="card">
+            <h2>Your Audits</h2>
+
+            {% if audits %}
+            <table class="audit-table">
+                <thead>
+                    <tr>
+                        <th>Audit ID</th>
+                        <th>Total Score</th>
+                        <th>Status</th>
+                        <th>Last Updated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for audit in audits %}
+                    <tr>
+                        <td>{{ audit.audit_id }}</td>
+                        <td>{{ audit.total_score or 'N/A' }}</td>
+                        <td>
+                            <span class="status {{ 'draft' if audit.draft == 'Y' else 'complete' }}">
+                                {{ 'Draft' if audit.draft == 'Y' else 'Complete' }}
+                            </span>
+                        </td>
+                        <td>{{ audit.last_edited_ts or audit.created_ts }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+                <p>No audits assigned.</p>
+            {% endif %}
+        </div>
+
+    </div>
+
+</body>
+</html>
