@@ -84,8 +84,13 @@ def list_suppliers():
         return "Unauthorized", 403
 
     suppliers_list = SupplierService.get_all_suppliers()
+    supplier_scores = SupplierService.get_latest_audit_scores_by_supplier()
 
-    return render_template('listsuppliers.html', suppliers=suppliers_list)
+    return render_template(
+        'listsuppliers.html',
+        suppliers=suppliers_list,
+        supplier_scores=supplier_scores
+    )
 
 @app.route('/addsupplier', methods=['GET', 'POST'])
 def add_supplier():
@@ -228,7 +233,7 @@ def edit_audit(audit_id):
                 except ValueError:
                     scores[finding_id] = None
 
-        new_items = request.form.getlist("new_action_item")
+        action_items = request.form.getlist("action_item")
 
         submit_final = "submit_final" in request.form
 
@@ -246,13 +251,14 @@ def edit_audit(audit_id):
             else:
                 # Save audit
                 AuditService.save_audit_scores(audit_id, scores, submit_final=True)
-
+                AuditService.save_action_items(audit_id, action_items, True)
                 flash("Audit submitted successfully!", "success")
                 return redirect(url_for("view_audit", audit_id=audit_id))
 
         else:
             # Save draft
             AuditService.save_audit_scores(audit_id, scores, submit_final=False)
+            AuditService.save_action_items(audit_id, action_items, submit_final=False)
             flash("Draft saved successfully!", "success")
             return redirect(url_for("edit_audit", audit_id=audit_id))
 

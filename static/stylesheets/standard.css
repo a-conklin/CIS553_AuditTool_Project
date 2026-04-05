@@ -118,3 +118,46 @@ table th, table td {
 table th {
     background-color: #f0f2f5;
 }
+
+.action-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+/* Make textarea full width and clean */
+.action-item-card textarea {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Improve spacing */
+.action-item-card {
+    border-left: 5px solid #007bff;
+    background: #f9fbfd;
+}
+
+.action-item-header h5 {
+    margin: 0;
+}
+
+.action-item-card:hover {
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+.score-box {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    display: inline-block;
+    min-width: 50px;
+    text-align: center;
+}
+
+.score-red { background-color: red; color: white; }
+.score-orange { background-color: orange; color: black; }
+.score-yellow { background-color: yellow; color: black; }
+.score-green { background-color: green; color: white; }
+.score-cyan { background-color: cyan; color: black; }
+.score-white { background-color: white; color: black; }

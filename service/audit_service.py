@@ -226,43 +226,30 @@ class AuditService:
             conn.close()
 
     @staticmethod
-    def save_action_items(audit_id, action_items_data, submit_final=False):
+    def save_action_items(audit_id, action_items_texts, submit_final=False):
         """
-        action_items_data: list of dicts like
-        [
-            {"action_item_id": 1, "item_text": "updated text"},
-            {"item_text": "new action item"}  # no id = new
-        ]
-        submit_final: if True, set all action items to 'submitted'
+        action_items_texts: list of strings
         """
         conn = psycopg2.connect(**db_config)
         cur = conn.cursor()
 
         try:
-            for item in action_items_data:
-                # New item (no action_item_id)
-                if not item.get("action_item_id"):
-                    cur.execute("""
-                            INSERT INTO supplieraudit.action_item
-                            (audit_id, item_text, status)
-                            VALUES (%s, %s, %s)
-                        """, (audit_id, item["item_text"].strip(), "submitted" if submit_final else "draft"))
+            #Delete existing items
+            cur.execute("""
+                DELETE FROM supplieraudit.action_item
+                WHERE audit_id = %s
+            """, (audit_id,))
 
-                # Existing item → update text
-                else:
-                    cur.execute("""
-                            UPDATE supplieraudit.action_item
-                            SET item_text = %s
-                            WHERE action_item_id = %s
-                        """, (item["item_text"].strip(), item["action_item_id"]))
+            #Insert fresh items
+            status = 'submitted' if submit_final else 'draft'
 
-            # If final submit, update all statuses for this audit
-            if submit_final:
-                cur.execute("""
-                        UPDATE supplieraudit.action_item
-                        SET status = 'submitted'
-                        WHERE audit_id = %s
-                    """, (audit_id,))
+            for text in action_items_texts:
+                if text.strip():
+                    cur.execute("""
+                        INSERT INTO supplieraudit.action_item
+                        (audit_id, item_text, status)
+                        VALUES (%s, %s, %s)
+                    """, (audit_id, text.strip(), status))
 
             conn.commit()
             return {"status": "success"}

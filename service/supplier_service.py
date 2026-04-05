@@ -103,3 +103,27 @@ class SupplierService:
         finally:
             cur.close()
             conn.close()
+
+    @staticmethod
+    def get_latest_audit_scores_by_supplier():
+        conn = psycopg2.connect(**db_config)
+        cur = conn.cursor()
+
+        try:
+            cur.execute("""
+                SELECT DISTINCT ON (supplier_id)
+                    supplier_id,
+                    total_score
+                FROM supplieraudit.audit
+                WHERE draft = 'N'
+                ORDER BY supplier_id, created_ts DESC
+            """)
+
+            rows = cur.fetchall()
+
+            # Map: supplier_id -> score
+            return {row[0]: row[1] for row in rows}
+
+        finally:
+            cur.close()
+            conn.close()

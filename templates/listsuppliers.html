@@ -26,6 +26,7 @@
                     <th>City</th>
                     <th>State</th>
                     <th>Country</th>
+                    <th>Latest Score</th>
                 </tr>
             </thead>
             <tbody>
@@ -37,6 +38,25 @@
                     <td>{{ s.city }}</td>
                     <td>{{ s.state }}</td>
                     <td>{{ s.country }}</td>
+                    <td>
+                        {% set score = supplier_scores.get(s.supplier_id) %}
+
+                        {% if score is none %}
+                            N/A
+                        {% else %}
+                            {% set score_class =
+                                'score-white' if score == 0 else
+                                'score-red' if score < 6 else
+                                'score-orange' if score < 7 else
+                                'score-yellow' if score < 8 else
+                                'score-green' if score < 9.5 else
+                                'score-cyan'
+                            %}
+                            <span class="score-box {{ score_class }}">
+                                {{ score|round(2) }}
+                            </span>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

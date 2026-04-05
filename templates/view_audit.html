@@ -38,6 +38,50 @@
             min-width: 150px;
             margin-top: 10px;
         }
+        .action-item-card {
+            border-left: 5px solid #007bff;
+            background: #f9fbfd;
+        }
+
+        .action-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Status badges */
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .status-draft {
+            background-color: #ccc;
+            color: black;
+        }
+
+        .status-submitted {
+            background-color: orange;
+            color: black;
+        }
+
+        .status-complete {
+            background-color: green;
+            color: white;
+        }
+
+        /* Supplier response layout */
+        .response-section {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+        }
+
+        .response-section div {
+            margin-bottom: 8px;
+        }
     </style>
 </head>
 <body>
@@ -106,6 +150,53 @@
         {% endfor %}
     </div>
 {% endfor %}
+</div>
+
+<div class="card" style="margin-top: 30px;">
+    <h3>Action Items</h3>
+
+    {% if action_items %}
+        {% for item in action_items %}
+            <div class="card action-item-card" style="margin-top: 15px; padding: 15px;">
+
+                <div class="action-item-header">
+                    <h4 style="margin: 0;">Action Item {{ loop.index }}</h4>
+                    <span class="status-badge status-{{ item.status }}">
+                        {{ "Pending Response" if item.status == "submitted" else item.status|capitalize }}
+                    </span>
+                </div>
+
+                <div style="margin-top: 10px;">
+                    <strong>Description:</strong>
+                    <p>{{ item.item_text }}</p>
+                </div>
+
+                <div class="response-section">
+                    <div>
+                        <strong>Root Cause:</strong>
+                        <p>{{ item.root_cause or "Not provided" }}</p>
+                    </div>
+
+                    <div>
+                        <strong>Corrective Action:</strong>
+                        <p>{{ item.corrective_action or "Not provided" }}</p>
+                    </div>
+
+                    <div>
+                        <strong>Preventive Action:</strong>
+                        <p>{{ item.preventive_action or "Not provided" }}</p>
+                    </div>
+                </div>
+
+                <div style="margin-top: 10px; font-size: 0.9em; color: #555;">
+                    Responder ID: {{ item.responder_id or "Unassigned" }}
+                </div>
+
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No action items recorded.</p>
+    {% endif %}
 </div>
 
 {% set total = audit.total_score|default(0) %}

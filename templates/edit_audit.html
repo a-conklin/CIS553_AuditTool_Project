@@ -38,6 +38,35 @@
                 0
             </div>
         </div>
+        <div class="card mb-3 p-3">
+            <h4>Action Items</h4>
+
+            <div id="action-items-container">
+                {% for item in action_items %}
+                    <div class="card action-item-card mb-3 p-3">
+                        <div class="action-item-header">
+                            <h5>Action Item {{ loop.index }}</h5>
+                            <button type="button"
+                                    class="btn btn-danger btn-sm"
+                                    onclick="removeActionItem(this)">
+                                Delete
+                            </button>
+                        </div>
+
+                        <textarea name="action_item"
+                                  class="form-control"
+                                  rows="3"
+                                  placeholder="Describe the action item...">{{ item.item_text }}</textarea>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <button type="button"
+                    class="btn btn-secondary mt-2"
+                    onclick="addActionItem()">
+                + Add Action Item
+            </button>
+        </div>
         <div style="margin-top: 15px;">
             <a href="{{ url_for('audit_listing') }}" class="btn btn-secondary">Back</a>
             <button type="submit" name="save_draft" class="btn btn-primary">Save Draft</button>
@@ -45,6 +74,8 @@
         </div>
     </form>
 </div>
+
+
 
 
 <script>
@@ -151,6 +182,43 @@ document.addEventListener("DOMContentLoaded", () => {
         {% endfor %}
     {% endfor %}
 });
+
+function addActionItem() {
+    const container = document.getElementById("action-items-container");
+    const count = container.children.length + 1;
+
+    const card = document.createElement("div");
+    card.className = "card action-item-card mb-3 p-3";
+
+    card.innerHTML = `
+        <div class="action-item-header">
+            <h5>Action Item ${count}</h5>
+            <button type="button"
+                    class="btn btn-danger btn-sm"
+                    onclick="removeActionItem(this)">
+                Delete
+            </button>
+        </div>
+
+        <textarea name="action_item"
+                  class="form-control"
+                  rows="3"
+                  placeholder="Describe the action item..."></textarea>
+    `;
+
+    container.appendChild(card);
+}
+
+function removeActionItem(button) {
+    const card = button.closest(".action-item-card");
+    card.remove();
+
+    // Re-number remaining items
+    const cards = document.querySelectorAll(".action-item-card h5");
+    cards.forEach((header, index) => {
+        header.textContent = `Action Item ${index + 1}`;
+    });
+}
 </script>
 </body>
 </html>
