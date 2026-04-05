@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Audit</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/standard.css') }}">
+</head>
+<body>
+
+{% include "navbar.html" %}
+
+<div class="container mt-4">
+    <h2>
+        Audit of {{ supplier_name }}, performed by {{ auditor_name }}
+    </h2>
+    <form method="POST">
+        {% for group in template.groups %}
+            <div class="card mb-3 p-3">
+                <h4>{{ group.name }} (Weight: {{ group.weight }})</h4>
+                {% for q in group.questions %}
+                    <div class="mb-2">
+                        <label>{{ q.question_text }} {% if q.mandatory == 'Y' %}(Mandatory){% endif %}</label>
+                        <input type="number" min="0" max="10" step="0.1"
+                           name="score_{{ findings_by_question[q.question_id].finding_id }}"
+                           value="{{ findings_by_question[q.question_id].score }}"
+                           required
+                           data-group-id="{{ group.group_id }}"
+                           data-group-weight="{{ group.weight }}">
+                    </div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+
+        <div class="card mb-3 p-3">
+            <h4>Total Score</h4>
+            <div id="total-score-box"
+                 style="font-size: 1.5em; font-weight: bold; padding: 10px; border-radius: 6px; text-align: center; background: white;">
+                0
+            </div>
+        </div>
+        <div style="margin-top: 15px;">
+            <a href="{{ url_for('audit_listing') }}" class="btn btn-secondary">Back</a>
+            <button type="submit" name="save_draft" class="btn btn-primary">Save Draft</button>
+            <button type="submit" name="submit_final" class="btn btn-success">Submit Final</button>
+        </div>
+    </form>
+</div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.querySelector("form");
+
+    const totalScoreBox = document.getElementById("total-score-box");
+
+    function updateTotalScore() {
+        const inputs = document.querySelectorAll('input[name^="score_"]');
+        const groupScores = {};
+        const groupWeights = {};
+
+        inputs.forEach(input => {
+            const groupId = input.dataset.groupId;
+            const weight = parseFloat(input.dataset.groupWeight);
+            const value = parseFloat(input.value);
+
+            if (!groupScores[groupId]) groupScores[groupId] = [];
+            if (!groupWeights[groupId]) groupWeights[groupId] = weight;
+
+            if (!isNaN(value)) groupScores[groupId].push(value);
+        });
+
+        let totalWeightedScore = 0;
+        let totalWeights = 0;
+
+        for (const gid in groupScores) {
+            const scores = groupScores[gid];
+            const weight = groupWeights[gid];
+            const avg = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+            totalWeightedScore += avg * weight;
+            totalWeights += weight;
+        }
+
+        const finalScore = totalWeights ? totalWeightedScore / totalWeights : 0;
+        totalScoreBox.textContent = finalScore.toFixed(2);
+
+        // Set background color
+        let bgColor = 'white';
+        if (finalScore > 0 && finalScore < 6) bgColor = 'red';
+        else if (finalScore >= 6 && finalScore < 7) bgColor = 'orange';
+        else if (finalScore >= 7 && finalScore < 8) bgColor = 'yellow';
+        else if (finalScore >= 8 && finalScore < 9.5) bgColor = 'green';
+        else if (finalScore >= 9.5) bgColor = 'cyan';
+
+        totalScoreBox.style.backgroundColor = bgColor;
+    }
+
+    // Listen to input events for all score fields
+    document.querySelectorAll('input[name^="score_"]').forEach(input => {
+        input.addEventListener("input", updateTotalScore);
+    });
+
+    // Initial calculation
+    updateTotalScore();
+
+    // Function to validate mandatory scores
+    function validateMandatory() {
+        let valid = true;
+        const missing = [];
+
+        {% for group in template.groups %}
+            {% for q in group.questions %}
+                {% if q.mandatory == 'Y' %}
+                    const input_{{ q.question_id }} = document.querySelector('[name="score_{{ findings_by_question[q.question_id].finding_id }}"]');
+                    if (!input_{{ q.question_id }}.value) {
+                        input_{{ q.question_id }}.style.border = "2px solid red";
+                        missing.push("{{ q.question_text }}");
+                        valid = false;
+                    } else {
+                        input_{{ q.question_id }}.style.border = "";
+                    }
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+
+        return { valid, missing };
+    }
+
+    // Validate on form submit
+    form.addEventListener("submit", (e) => {
+        const submitFinal = e.submitter && e.submitter.name === "submit_final";
+        if (!submitFinal) return; // draft save does not require validation
+
+        const result = validateMandatory();
+        if (!result.valid) {
+            e.preventDefault();
+            alert("Cannot submit final. Mandatory questions missing scores: " + result.missing.join(", "));
+        }
+    });
+
+    // Optional: validate in real-time on input
+    {% for group in template.groups %}
+        {% for q in group.questions %}
+            {% if q.mandatory == 'Y' %}
+                const input_{{ q.question_id }} = document.querySelector('[name="score_{{ findings_by_question[q.question_id].finding_id }}"]');
+                input_{{ q.question_id }}.addEventListener("input", () => {
+                    if (input_{{ q.question_id }}.value) {
+                        input_{{ q.question_id }}.style.border = "";
+                    }
+                });
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Audit Template</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/standard.css') }}">
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin:0;}
+        .container { padding: 40px; max-width: 700px; margin: auto;}
+        .card { background:white; padding:25px; border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.08); position: relative;}
+        input[type="text"], input[type="number"] { width: 100%; padding:10px; margin-bottom:10px; border-radius:6px; border:1px solid #ccc;}
+        label { font-weight: bold; margin-bottom:5px; display:block;}
+        .blue-btn { background:#007bff; color:white; padding:10px 20px; border:none; border-radius:6px; cursor:pointer; margin-top:10px;}
+        .blue-btn:hover { background:#0056b3; }
+        .d-flex { display:flex; align-items:center; }
+        .me-2 { margin-right:10px; }
+        .ms-1 { margin-left:5px; }
+        .delete-btn { background:#dc3545; color:white; border:none; border-radius:6px; padding:2px 8px; cursor:pointer; margin-left:5px;}
+        .delete-btn:hover { background:#b02a37; }
+    </style>
+</head>
+<body>
+
+{% include "navbar.html" %}
+<div class="container mt-4">
+
+    <h2>Create Audit Template</h2>
+
+    <!-- Template Name -->
+    <div class="mb-3">
+        <label for="templateName">Template Name</label>
+        <input type="text" id="templateName" class="form-control">
+    </div>
+
+    <!-- Groups Container -->
+    <div id="groupsContainer"></div>
+
+    <button class="blue-btn" onclick="addGroup()">+ Add Group</button>
+    <hr>
+    <button class="blue-btn" onclick="saveTemplate()">Save Template</button>
+
+</div>
+
+<script>
+let groups = [];
+
+// Initialize page with one group and one question
+function init() {
+    addGroup();
+    addQuestion(0);
+}
+
+// Add a new group
+function addGroup() {
+    const group = {
+        name: "",
+        weight: 1,
+        questions: []
+    };
+    groups.push(group);
+    buildtemplate();
+}
+
+// Add a new question to a group
+function addQuestion(groupIndex) {
+    groups[groupIndex].questions.push({
+        text: "",
+        mandatory: false
+    });
+    buildtemplate();
+}
+
+function deleteQuestion(groupIndex, questionIndex) {
+    if (groups[groupIndex].questions.length <= 1) return; // keep at least one question
+    groups[groupIndex].questions.splice(questionIndex, 1);
+    buildtemplate();
+}
+
+function deleteGroup(groupIndex) {
+    if (groups.length <= 1) return; // keep at least one group
+    groups.splice(groupIndex, 1);
+    buildtemplate();
+}
+
+
+function buildtemplate() {
+    const container = document.getElementById("groupsContainer");
+    container.innerHTML = "";
+
+    groups.forEach((group, gIndex) => {
+        let groupHtml = `
+            <div class="card mt-3 p-3">
+
+                <div class="d-flex align-items-center mb-2 gap-2">
+                    <input type="text" class="form-control flex-grow-1"
+                           placeholder="Group Name"
+                           value="${group.name}"
+                           onchange="groups[${gIndex}].name = this.value">
+
+                    <input type="number" class="form-control"
+                           style="width:100px;"
+                           placeholder="Weight"
+                           min="0" max="1" step="0.01"
+                           value="${group.weight}"
+                           onchange="groups[${gIndex}].weight = parseFloat(this.value)">
+
+                    ${gIndex > 0 ? `<button class="delete-btn" onclick="deleteGroup(${gIndex})">Delete Group</button>` : ""}
+                </div>
+        `;
+
+        groupHtml += `<div>`; // Questions container
+
+        group.questions.forEach((q, qIndex) => {
+            groupHtml += `
+                <div class="d-flex align-items-center mb-2 gap-2">
+                    <input type="text" class="form-control flex-grow-1"
+                           placeholder="Question text"
+                           value="${q.text}"
+                           onchange="groups[${gIndex}].questions[${qIndex}].text = this.value">
+
+                    <div class="d-flex align-items-center">
+                        <input type="checkbox"
+                               ${q.mandatory ? "checked" : ""}
+                               onchange="groups[${gIndex}].questions[${qIndex}].mandatory = this.checked">
+                        <label class="ms-1 mb-0">Mandatory</label>
+                    </div>
+
+                    ${qIndex > 0 ? `<button class="delete-btn" onclick="deleteQuestion(${gIndex}, ${qIndex})">Delete</button>` : ""}
+                </div>
+            `;
+        });
+
+        groupHtml += `
+                </div>
+                <button class="blue-btn btn-sm mt-2"
+                        onclick="addQuestion(${gIndex})">
+                    + Add Question
+                </button>
+            </div>
+        `;
+
+        container.innerHTML += groupHtml;
+    });
+}
+
+// Save template to backend
+function saveTemplate() {
+    const payload = {
+        name: document.getElementById("templateName").value,
+        groups: groups
+    };
+
+    fetch("/template_builder", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            alert("Template saved!");
+            window.location.href = "templates/template_list";
+        } else {
+            alert("Error: " + data.message);
+        }
+    });
+}
+
+// Initialize default group + question
+init();
+</script>
+
+</body>
+</html>

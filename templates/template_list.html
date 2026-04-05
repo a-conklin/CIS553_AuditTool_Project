@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Supplier</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/standard.css') }}">
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin:0;}
+
+        input { width: 100%; padding:10px; margin-bottom:15px; border-radius:6px; border:1px solid #ccc;}
+
+    </style>
+</head>
+<body>
+
+{% include "navbar.html" %}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Audit Templates</h2>
+        <a href="{{ url_for('template_builder') }}">
+            <button class="blue-btn">Add New Template</button>
+        </a>
+    </div>
+
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Created By</th>
+                <th>Date Created</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for template in templates %}
+            <tr>
+                <td><a href="{{ url_for('view_template', template_id=template.template_id) }}">
+                    {{ template.name }}
+                </a></td>
+                <td>{{ template.created_by or '—' }}</td>
+                <td>
+                    {{ template.created_ts.strftime('%Y-%m-%d') if template.created_ts else '' }}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" class="text-center">
+                    No templates found.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+</body>

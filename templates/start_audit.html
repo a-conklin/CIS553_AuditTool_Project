@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>New Audit</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/standard.css') }}">
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin:0;}
+        .container { padding: 40px; max-width: 500px; margin: auto;}
+        .card { background:white; padding:25px; border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.08);}
+        input, select { width: 100%; padding:10px; margin-bottom:15px; border-radius:6px; border:1px solid #ccc;}
+        .btn { padding:10px 20px; background:#007bff; color:white; border:none; border-radius:6px; cursor:pointer;}
+        .btn:hover { background:#0069d9; }
+    </style>
+</head>
+<body>
+
+{% include "navbar.html" %}
+
+<div class="container mt-4">
+    <div class="card">
+        <h2>Create New Audit</h2>
+
+        <form method="POST">
+            <!-- Supplier Dropdown -->
+            <label>Supplier</label>
+            <select name="supplier_id" required>
+                {% for s in suppliers %}
+                    <option value="{{ s.supplier_id }}"
+                        {% if preselected_supplier_id and s.supplier_id == preselected_supplier_id %}selected{% endif %}>
+                        {{ s.name }} ({{ s.city }}, {{ s.state }})
+                    </option>
+                {% endfor %}
+            </select>
+
+            <!-- Template Dropdown -->
+            <label>Audit Template</label>
+            <select name="template_id" required>
+                {% for t in templates %}
+                    <option value="{{ t.template_id }}">{{ t.name }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" class="btn">Create Draft Audit</button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

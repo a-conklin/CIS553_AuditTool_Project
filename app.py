@@ -1,6 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from flask import Flask, flash, render_template, request, redirect, url_for, session, jsonify
 import psycopg2
 from dbconfig import db_config
+from service.audit_service import AuditService
+from service.audit_template_service import AuditTemplateService
+from service.supplier_service import SupplierService
 
 app = Flask(__name__)
 app.secret_key = 'auditing_secret_key'
@@ -8,17 +11,17 @@ app.secret_key = 'auditing_secret_key'
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
+        email = request.form['email']
         password = request.form['password']
 
         conn = psycopg2.connect(**db_config)
         cur = conn.cursor()
 
         cur.execute("""
-            SELECT id, username, supplier_id
+            SELECT id, username, supplier_id, email
             FROM supplieraudit.users
-            WHERE username = %s AND password = %s
-        """, (username, password))
+            WHERE email = %s AND password = %s
+        """, (email, password))
 
         user = cur.fetchone()
 
@@ -29,6 +32,7 @@ def login():
             session['user_id'] = user[0]
             session['username'] = user[1]
             session['supplier_id'] = user[2]
+            session['email'] = user[3]
 
             if user[2] is None:
                 return redirect(url_for('internal_home'))
@@ -62,46 +66,8 @@ def supplier_home():
     if supplier_id is None:
         return "Unauthorized", 403
 
-    conn = psycopg2.connect(**db_config)
-    cur = conn.cursor()
-
-    cur.execute("""
-        SELECT name, address, city, state, country, zip
-        FROM supplieraudit.supplier
-        WHERE supplier_id = %s
-    """, (supplier_id,))
-    supplier = cur.fetchone()
-
-    #TODO Make supplier object
-    supplier_data = {
-        "name": supplier[0],
-        "address": supplier[1],
-        "city": supplier[2],
-        "state": supplier[3],
-        "country": supplier[4],
-        "zip": supplier[5],
-    }
-
-    cur.execute("""
-        SELECT audit_id, total_score, draft, created_ts, last_edited_ts
-        FROM supplieraudit.audit
-        WHERE supplier_id = %s
-        ORDER BY created_ts DESC
-    """, (supplier_id,))
-    audits = cur.fetchall()
-
-    audit_list = []
-    for a in audits:
-        audit_list.append({
-            "audit_id": a[0],
-            "total_score": a[1],
-            "draft": a[2],
-            "created_ts": a[3],
-            "last_edited_ts": a[4],
-        })
-
-    cur.close()
-    conn.close()
+    supplier_data = SupplierService.get_supplier_by_id(supplier_id)
+    audit_list = AuditService.get_audits_by_supplier(supplier_id)
 
     return render_template(
         'supplier.html',
@@ -117,59 +83,239 @@ def list_suppliers():
     if session.get('supplier_id') is not None:
         return "Unauthorized", 403
 
-    conn = psycopg2.connect(**db_config)
-    cur = conn.cursor()
-
-    cur.execute("""
-        SELECT supplier_id, name, address, city, state, country
-        FROM supplieraudit.supplier
-        ORDER BY name
-    """)
-    suppliers_data = cur.fetchall()
-    cur.close()
-    conn.close()
-
-    #TODO make a supplier object
-    suppliers_list = []
-    for s in suppliers_data:
-        suppliers_list.append({
-            "id": s[0],
-            "name": s[1],
-            "address": s[2],
-            "city": s[3],
-            "state": s[4],
-            "country": s[5]
-        })
+    suppliers_list = SupplierService.get_all_suppliers()
 
     return render_template('listsuppliers.html', suppliers=suppliers_list)
 
 @app.route('/addsupplier', methods=['GET', 'POST'])
 def add_supplier():
-    if 'user_id' not in session or session.get('supplier_id') is not None:
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    if session.get('supplier_id') is not None:
         return "Unauthorized", 403
 
     if request.method == 'POST':
-        name = request.form['name']
-        city = request.form['city']
-        state = request.form['state']
-        country = request.form['country']
-        address = request.form.get('address', '')
-        zip_code = request.form.get('zip', '')
-        created_by = session['user_id']
+        data = {
+            "name": request.form['name'],
+            "city": request.form['city'],
+            "state": request.form['state'],
+            "country": request.form['country'],
+            "address": request.form.get('address', ''),
+            "zip": request.form.get('zip', '')
+        }
 
-        conn = psycopg2.connect(**db_config)
-        cur = conn.cursor()
-        cur.execute("""
-            INSERT INTO supplieraudit.supplier (name, address, city, state, country, zip, created_ts, created_by)
-            VALUES (%s, %s, %s, %s, %s, %s, NOW(), %s)
-        """, (name, address, city, state, country, zip_code, created_by))
-        conn.commit()
-        cur.close()
-        conn.close()
+        result = SupplierService.create_supplier(data, session['user_id'])
 
-        return redirect(url_for('list_suppliers'))
+        if result["status"] == "success":
+            return redirect(url_for('list_suppliers'))
+        else:
+            return result["message"], 500
 
     return render_template('addsupplier.html')
+
+@app.route('/list_templates')
+def list_templates():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    if session.get('supplier_id') is not None:
+        return "Unauthorized", 403
+
+    templates = AuditTemplateService.get_templates()
+
+    return render_template('template_list.html', templates=templates)
+
+@app.route('/template_builder', methods=['GET', 'POST'])
+def template_builder():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    if session.get('supplier_id') is not None:
+        return "Unauthorized", 403
+
+    if request.method == 'POST':
+        data = request.get_json()
+        user_id = session['user_id']
+
+        result = AuditTemplateService.create_template(data, user_id)
+        return jsonify(result)
+
+    return render_template('template_builder.html')
+
+@app.route("/template_viewer/<int:template_id>")
+def view_template(template_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    if session.get('supplier_id') is not None:
+        return "Unauthorized", 403
+    template = AuditTemplateService.get_template_by_id(template_id)  # returns entity with groups & questions
+    return render_template("template_viewer.html", template=template)
+
+@app.route("/start_audit", methods=["GET", "POST"])
+def start_audit():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    if session.get('supplier_id') is not None:
+        return "Unauthorized", 403
+
+    user_id = session["user_id"]
+
+    # Prepopulate supplier if ?supplier_id=xxx is passed in the URL
+    preselected_supplier_id = request.args.get("supplier_id", type=int)
+
+    if request.method == "POST":
+        supplier_id = int(request.form["supplier_id"])
+        template_id = int(request.form["template_id"])
+
+        # Create a new draft audit
+        audit_id = AuditService.create_draft_audit(user_id, supplier_id, template_id)
+
+        return redirect(url_for("edit_audit", audit_id=audit_id))
+
+    # GET request
+    if preselected_supplier_id:
+        supplier = SupplierService.get_supplier_by_id(preselected_supplier_id)
+        suppliers = [supplier] if supplier else []
+    else:
+        suppliers = SupplierService.get_all_suppliers()
+
+    templates = AuditTemplateService.get_templates()
+
+    return render_template(
+        "start_audit.html",
+        suppliers=suppliers,
+        preselected_supplier_id=preselected_supplier_id,
+        templates=templates
+    )
+
+@app.route("/edit_audit/<int:audit_id>", methods=["GET", "POST"])
+def edit_audit(audit_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    if session.get('supplier_id') is not None:
+        return "Unauthorized", 403
+
+    user_id = session["user_id"]
+
+    # Load audit and template
+    audit, template, findings_by_question, supplier_name, auditor_name, action_items = AuditService.get_audit_with_findings(audit_id)
+
+    if not audit:
+        return "Audit not found", 404
+
+    # Prevent editing if final
+    if audit.draft == 'N':
+        return render_template(
+            "view_audit.html",  # read-only page
+            audit=audit,
+            template=template,
+            findings_by_question=findings_by_question,
+            supplier_name=supplier_name,
+            auditor_name=auditor_name,
+            action_items=action_items,
+            error="This audit has been submitted and cannot be edited."
+        )
+
+    error = None
+
+    if request.method == "POST":
+        scores = {}
+        for key, value in request.form.items():
+            if key.startswith("score_"):
+                finding_id = int(key.split("_")[1])
+                try:
+                    scores[finding_id] = float(value)
+                except ValueError:
+                    scores[finding_id] = None
+
+        new_items = request.form.getlist("new_action_item")
+
+        submit_final = "submit_final" in request.form
+
+        # Mandatory question validation
+        if submit_final:
+            missing = []
+            for group in template.groups:
+                for q in group.questions:
+                    if q.mandatory == 'Y':
+                        finding = findings_by_question.get(q.question_id)
+                        if finding and (finding.finding_id not in scores or scores[finding.finding_id] is None):
+                            missing.append(q.question_text)
+            if missing:
+                error = f"Cannot submit final. Mandatory questions missing scores: {', '.join(missing)}"
+            else:
+                # Save audit
+                AuditService.save_audit_scores(audit_id, scores, submit_final=True)
+
+                flash("Audit submitted successfully!", "success")
+                return redirect(url_for("view_audit", audit_id=audit_id))
+
+        else:
+            # Save draft
+            AuditService.save_audit_scores(audit_id, scores, submit_final=False)
+            flash("Draft saved successfully!", "success")
+            return redirect(url_for("edit_audit", audit_id=audit_id))
+
+    return render_template(
+        "edit_audit.html",
+        audit=audit,
+        template=template,
+        findings_by_question=findings_by_question,
+        supplier_name=supplier_name,
+        auditor_name=auditor_name,
+        action_items=action_items,
+        error=error
+    )
+
+@app.route("/view_audit/<int:audit_id>")
+def view_audit(audit_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    if session.get('supplier_id') is not None:
+        return "Unauthorized", 403
+
+    audit, template, findings_by_question, supplier_name, auditor_name, action_items = AuditService.get_audit_with_findings(audit_id)
+
+    if not audit:
+        return "Audit not found", 404
+
+    if audit.draft == 'Y':
+        # Prevent viewing drafts here
+        return redirect(url_for("edit_audit", audit_id=audit_id))
+
+    return render_template(
+        "view_audit.html",
+        audit=audit,
+        template=template,
+        findings_by_question=findings_by_question,
+        supplier_name=supplier_name,
+        auditor_name=auditor_name,
+        action_items=action_items
+    )
+
+@app.route("/audit_listing")
+def audit_listing():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+
+    # Fetch all audits by this user
+    audits = AuditService.get_audits_by_user(user_id)  # We'll implement this next
+
+    # Fetch supplier names for each audit
+    supplier_ids = list({a.supplier_id for a in audits})
+    suppliers = {s.supplier_id: s for s in SupplierService.get_suppliers_by_ids(supplier_ids)}
+
+    # Sort drafts first, then by created_ts descending
+    audits.sort(key=lambda a: (a.draft != 'Y', -a.created_ts.timestamp()))
+
+    return render_template(
+        "audit_listing.html",
+        audits=audits,
+        suppliers=suppliers
+    )
+
 
 @app.route('/test_db')
 def test_db():

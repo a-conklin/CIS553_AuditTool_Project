@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Audits</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/standard.css') }}">
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background: #f2f2f2;
+        }
+        .btn {
+            padding: 6px 12px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-edit { background-color: #007bff; color: white; }
+        .btn-view { background-color: #28a745; color: white; }
+        .btn-new { background-color: #17a2b8; color: white; margin-bottom: 15px; }
+        .draft-row { background-color: #fff8c4; } /* Light yellow for drafts */
+        .score-box {
+            padding: 6px 10px;
+            border-radius: 5px;
+            color: black;
+            font-weight: bold;
+            display: inline-block;
+            min-width: 50px;
+            text-align: center;
+        }
+        .score-red { background-color: #f28b82; }
+        .score-orange { background-color: #fbbc04; }
+        .score-yellow { background-color: #fff475; }
+        .score-green { background-color: #ccff90; }
+        .score-cyan { background-color: #a7ffeb; }
+        .score-white { background-color: #ffffff; }
+    </style>
+</head>
+<body>
+
+{% include "navbar.html" %}
+
+<div class="container mt-4">
+    <h2>My Audits</h2>
+
+    <!-- New Audit Button -->
+    <a href="{{ url_for('start_audit') }}" class="btn btn-new">Create New Audit</a>
+
+    {% if audits %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Audit ID</th>
+                    <th>Supplier</th>
+                    <th>Date Created</th>
+                    <th>Status</th>
+                    <th>Total Score</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for audit in audits %}
+                    {% set score_class =
+                        'score-white' if audit.total_score is none or audit.total_score == 0 else
+                        'score-red' if audit.total_score < 6 else
+                        'score-orange' if audit.total_score < 7 else
+                        'score-yellow' if audit.total_score < 8 else
+                        'score-green' if audit.total_score < 9.5 else
+                        'score-cyan' %}
+                    <tr class="{% if audit.draft == 'Y' %}draft-row{% endif %}">
+                        <td>{{ audit.audit_id }}</td>
+                        <td>{{ suppliers[audit.supplier_id].name }}</td>
+                        <td>{{ audit.created_ts }}</td>
+
+                        <!-- Status Column -->
+                        <td>
+                            {% if audit.draft == 'Y' %}
+                                <span class="status-draft">Draft</span>
+                            {% else %}
+                                <span class="status-final">Final</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Total Score -->
+                        <td>
+                            <span class="score-box {{ score_class }}">
+                                {{ audit.total_score|default(0)|round(2) }}
+                            </span>
+                        </td>
+
+                        <!-- Action -->
+                        <td>
+                            {% if audit.draft == 'Y' %}
+                                <a href="{{ url_for('edit_audit', audit_id=audit.audit_id) }}" class="btn btn-edit">Edit</a>
+                            {% else %}
+                                <a href="{{ url_for('view_audit', audit_id=audit.audit_id) }}" class="btn btn-view">View</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No audits found.</p>
+    {% endif %}
+</div>
+
+</body>
+</html>

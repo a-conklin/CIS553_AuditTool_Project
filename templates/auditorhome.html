@@ -3,69 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Internal Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/standard.css') }}">
     <style>
         body {
             margin: 0;
             font-family: Arial, sans-serif;
             background-color: #f4f6f9;
-        }
-
-
-
-
-        /* ===== Main Content ===== */
-        .container {
-            padding: 40px;
-        }
-
-        .welcome-card {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-
-        .welcome-card h1 {
-            margin: 0;
-            color: #333;
-        }
-
-        .welcome-card p {
-            color: #666;
-            margin-top: 10px;
-        }
-
-        /* ===== Dashboard Cards ===== */
-        .card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
-        }
-
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            transition: transform 0.2s, box-shadow 0.2s;
-            cursor: pointer;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-        }
-
-        .card h3 {
-            margin: 0;
-            color: #2C3E50;
-        }
-
-        .card p {
-            margin-top: 8px;
-            color: #777;
-            font-size: 14px;
         }
     </style>
 </head>
@@ -84,18 +27,24 @@
                 <h3>Manage Suppliers</h3>
                 <p>View or add suppliers to the system.</p>
                 <a href="{{ url_for('list_suppliers') }}">
-                    <button class="login-btn" style="margin-top: 10px;">View Suppliers</button>
+                    <button class="blue-btn" style="margin-top: 10px;">View Suppliers</button>
                 </a>
             </div>
 
             <div class="card">
                 <h3>Audit Templates</h3>
                 <p>Create and manage audit templates.</p>
+                <a href="{{ url_for('list_templates') }}">
+                    <button class="blue-btn" style="margin-top: 10px;">View Templates</button>
+                </a>
             </div>
 
             <div class="card">
                 <h3>Run Audits</h3>
                 <p>Start a new audit or continue a draft.</p>
+                <a href="{{ url_for('audit_listing') }}">
+                    <button class="blue-btn" style="margin-top: 10px;">View Your Audits</button>
+                </a>
             </div>
 
 

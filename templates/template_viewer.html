@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>View Audit Template</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/standard.css') }}">
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin:0;}
+        .container { padding: 40px; max-width: 700px; margin: auto;}
+        .card { background:white; padding:25px; border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.08);}
+        label { font-weight: bold; margin-bottom:5px; display:block;}
+        .d-flex { display:flex; align-items:center; gap:8px; }
+        .flex-grow-1 { flex-grow:1; }
+        .back-btn { background:#6c757d; color:white; padding:10px 20px; border:none; border-radius:6px; cursor:pointer; margin-top:10px;}
+        .back-btn:hover { background:#5a6268; }
+        input[readonly] { background:#e9ecef; border:1px solid #ccc; padding:8px; border-radius:6px; }
+    </style>
+</head>
+<body>
+
+{% include "navbar.html" %}
+<div class="container mt-4">
+
+    <h2>View Audit Template</h2>
+
+    <!-- Template Name -->
+    <div class="mb-3">
+        <label>Template Name</label>
+        <input type="text" value="{{ template.name }}" readonly>
+    </div>
+
+    <!-- Groups Container -->
+    {% for group in template.groups %}
+        <div class="card mt-3 p-3">
+            <div class="d-flex align-items-center mb-2">
+                <input type="text" value="{{ group.name }}" readonly class="flex-grow-1">
+                <input type="number" value="{{ group.weight }}" readonly style="width:100px;">
+            </div>
+
+            <!-- Questions -->
+            {% for question in group.questions %}
+                <div class="d-flex align-items-center mb-2">
+                    <input type="text" value="{{ question.question_text }}" readonly class="flex-grow-1">
+                    <div class="d-flex align-items-center">
+                        <input type="checkbox" {% if question.mandatory == 'Y' %}checked{% endif %} disabled>
+                        <label class="ms-1 mb-0">Mandatory</label>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endfor %}
+
+    <a href="{{ url_for('list_templates') }}">
+        <button class="back-btn" style="margin-top: 10px;">Back to Template List</button>
+    </a>
+
+</div>
+
+</body>
+</html>

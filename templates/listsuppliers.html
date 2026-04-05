@@ -3,56 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Manage Suppliers</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f6f9;
-            margin: 0;
-        }
-
-        .container {
-            padding: 40px;
-        }
-
-        .card {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            margin-bottom: 25px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        table th, table td {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-            text-align: left;
-        }
-
-        table th {
-            background-color: #f0f2f5;
-        }
-
-        .add-btn {
-            background-color: #4A90E2;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-
-        .add-btn:hover {
-            background-color: #357ABD;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/standard.css') }}">
 </head>
 <body>
 
@@ -62,7 +13,7 @@
     <div class="card">
         <h2>Suppliers</h2>
         <a href="{{ url_for('add_supplier') }}">
-            <button class="add-btn">Add New Supplier</button>
+            <button class="blue-btn">Add New Supplier</button>
         </a>
 
         {% if suppliers %}
@@ -80,7 +31,7 @@
             <tbody>
                 {% for s in suppliers %}
                 <tr>
-                    <td>{{ s.id }}</td>
+                    <td>{{ s.supplier_id }}</td>
                     <td>{{ s.name }}</td>
                     <td>{{ s.address }}</td>
                     <td>{{ s.city }}</td>

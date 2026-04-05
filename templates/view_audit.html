@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>View Audit</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/standard.css') }}">
+    <style>
+        .score-box {
+            padding: 6px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            min-width: 40px;
+            text-align: center;
+            font-weight: bold;
+            color: #000;
+        }
+        .score-red { background-color: red; color: white; }
+        .score-orange { background-color: orange; color: black; }
+        .score-yellow { background-color: yellow; color: black; }
+        .score-green { background-color: green; color: white; }
+        .score-cyan { background-color: cyan; color: black; }
+        .score-white { background-color: white; color: black; }
+        .card { background:white; padding:15px; border-radius:10px; margin-bottom:15px; position: relative; }
+        .group-score {
+            position: absolute;
+            top: 10px;
+            right: 10px;  /* changed from left → right */
+            padding: 6px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .final-score-box {
+            font-size: 3em;
+            font-weight: bold;
+            padding: 20px;
+            border-radius: 10px;
+            display: inline-block;
+            min-width: 150px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+{% include "navbar.html" %}
+
+<div class="container mt-4">
+    <h2>
+        Audit of {{ supplier_name }}, performed by {{ auditor_name }}
+    </h2>
+    <p>
+        Audit #{{ audit.audit_id }} |
+        Created: {{ audit.created_ts.strftime('%Y-%m-%d %H:%M') if audit.created_ts else 'N/A' }} |
+        Last Edited: {{ audit.last_edited_ts.strftime('%Y-%m-%d %H:%M') if audit.last_edited_ts else 'N/A' }}
+    </p>
+
+    {% for group in template.groups %}
+    <div class="card">
+        <h4 style="margin-right: 80px;">
+            {{ group.name }} (Weight: {{ group.weight }})
+        </h4>
+
+        {# Calculate group average #}
+        {% set group_scores = [] %}
+        {% for q in group.questions %}
+            {% set finding = findings_by_question[q.question_id] %}
+            {% set _ = group_scores.append(finding.score) %}
+        {% endfor %}
+        {% set group_avg = (group_scores|sum / group_scores|length) if group_scores else 0 %}
+
+        {# Determine group color using same thresholds #}
+        {% set group_class =
+            'score-white' if group_avg == 0 else
+            'score-red' if group_avg < 6 else
+            'score-orange' if group_avg < 7 else
+            'score-yellow' if group_avg < 8 else
+            'score-green' if group_avg < 9.5 else
+            'score-cyan'
+        %}
+        <div class="mb-2">
+            <div class="group-score ">
+            <strong>Group Average:</strong>
+                <div class="score-box {{ group_class }}" >
+                    {{ group_avg|round(2) }}
+                </div>
+
+            </div>
+        </div>
+
+        {% for q in group.questions %}
+            {% set finding = findings_by_question[q.question_id] %}
+            {% set score = finding.score %}
+            {% set score_class =
+                'score-white' if score == 0 else
+                'score-red' if score < 6 else
+                'score-orange' if score < 7 else
+                'score-yellow' if score < 8 else
+                'score-green' if score < 9.5 else
+                'score-cyan'
+            %}
+            <div class="mb-2">
+                <strong>{{ q.question_text }}</strong>
+                {% if q.mandatory == 'Y' %}(Mandatory){% endif %}:
+                <span class="score-box {{ score_class }}">{{ score }}</span>
+            </div>
+        {% endfor %}
+    </div>
+{% endfor %}
+</div>
+
+{% set total = audit.total_score|default(0) %}
+{% set total_class =
+    'score-white' if total == 0 else
+    'score-red' if total < 6 else
+    'score-orange' if total < 7 else
+    'score-yellow' if total < 8 else
+    'score-green' if total < 9.5 else
+    'score-cyan'
+%}
+
+<div class="card" style="text-align: center; margin-top: 30px;">
+    <h3>Final Audit Score</h3>
+    <div class="final-score-box {{ total_class }}">
+        {{ total|round(2) }}
+    </div>
+</div>
+
+<div style="margin-top: 20px;">
+    <a href="{{ url_for('audit_listing') }}" class="btn btn-secondary">
+        ← Back to My Audits
+    </a>
+</div>
+
+</body>
+</html>
