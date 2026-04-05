@@ -15,4 +15,4 @@ Directory Structure
 |   |
 |   - /seq_diagrams    Contains the sequence diagrams in particular
 |
-|-/src                  Contains the source code for the tool
+|-/templates           Contains the html templates used by flask to build the pages.
