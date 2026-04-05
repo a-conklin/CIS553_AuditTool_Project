@@ -112,10 +112,6 @@ ADD CONSTRAINT fk_user_supplier
 FOREIGN KEY (supplier_id)
 REFERENCES supplieraudit.supplier(supplier_id);
 
-ALTER TABLE supplieraudit.supplier
-ADD CONSTRAINT fk_supplier_created_by
-FOREIGN KEY (created_by)
-REFERENCES supplieraudit.users(id);
 
 ALTER TABLE supplieraudit.audit_template
 ADD CONSTRAINT fk_template_created_by
