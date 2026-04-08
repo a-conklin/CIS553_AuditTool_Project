@@ -132,11 +132,15 @@
                 <tbody>
                     {% for audit in audits %}
                     <tr>
-                        <td>{{ audit.audit_id }}</td>
-                        <td>{{ audit.total_score or 'N/A' }}</td>
                         <td>
-                            <span class="status {{ 'draft' if audit.draft == 'Y' else 'complete' }}">
-                                {{ 'Draft' if audit.draft == 'Y' else 'Complete' }}
+                            <a href="{{ url_for('supplier_view_audit', audit_id=audit.audit_id) }}">
+                                Audit performed on {{ audit.created_ts.strftime('%m-%d-%Y') }}
+                            </a>
+                        </td>
+                        <td>{{ audit.total_score|round(2) or 'N/A' }}</td>
+                        <td>
+                            <span class="status {{ 'draft' if audit.action_items_pending > 0 else 'complete' }}">
+                                {{ 'Pending' if audit.action_items_pending > 0 else 'Complete' }}
                             </span>
                         </td>
                         <td>{{ audit.last_edited_ts or audit.created_ts }}</td>

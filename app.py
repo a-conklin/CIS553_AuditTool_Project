@@ -1,6 +1,7 @@
 from flask import Flask, flash, render_template, request, redirect, url_for, session, jsonify
 import psycopg2
 from dbconfig import db_config
+from service.action_item_service import ActionItemService
 from service.audit_service import AuditService
 from service.audit_template_service import AuditTemplateService
 from service.supplier_service import SupplierService
@@ -67,10 +68,13 @@ def supplier_home():
         return "Unauthorized", 403
 
     supplier_data = SupplierService.get_supplier_by_id(supplier_id)
-    audit_list = AuditService.get_audits_by_supplier(supplier_id)
+    audit_list = AuditService.get_audits_for_supplier(supplier_id)
+
+    for audit in audit_list:
+        audit.action_items_pending = ActionItemService.get_action_item_count_for_audit(audit.audit_id)
 
     return render_template(
-        'supplier.html',
+        'supplierhome.html',
         supplier=supplier_data,
         audits=audit_list
     )
@@ -306,6 +310,9 @@ def audit_listing():
 
     user_id = session["user_id"]
 
+    if session.get('supplier_id') is not None:
+        return "Unauthorized", 403
+
     # Fetch all audits by this user
     audits = AuditService.get_audits_by_user(user_id)  # We'll implement this next
 
@@ -320,6 +327,64 @@ def audit_listing():
         "audit_listing.html",
         audits=audits,
         suppliers=suppliers
+    )
+
+@app.route("/supplier_view_audit/<int:audit_id>", methods=["GET", "POST"])
+def supplier_view_audit(audit_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    supplier_id = session.get("supplier_id")
+    if supplier_id is None:
+        return "Unauthorized", 403
+
+    audit, template, findings_by_question, supplier_name, auditor_name, action_items = \
+        AuditService.get_audit_with_findings(audit_id)
+
+    if not audit or audit.supplier_id != supplier_id:
+        return "Unauthorized", 403
+
+    # ===== HANDLE SUBMIT =====
+    if request.method == "POST":
+
+        # Only allow submission if items are in submitted state
+        if not all(item.status == "submitted" for item in action_items):
+            return "Invalid action", 400
+
+        for item in action_items:
+            root = request.form.get(f"root_cause_{item.action_item_id}")
+            corr = request.form.get(f"corrective_action_{item.action_item_id}")
+            prev = request.form.get(f"preventive_action_{item.action_item_id}")
+
+            ActionItemService.update_supplier_response(
+                item.action_item_id,
+                root,
+                corr,
+                prev,
+                session["user_id"]
+            )
+
+        # Mark all complete
+        ActionItemService.mark_all_complete(audit_id)
+
+        return render_template(
+            "supplier_view_audit.html",
+            audit=audit,
+            template=template,
+            findings_by_question=findings_by_question,
+            supplier_name=supplier_name,
+            auditor_name=auditor_name,
+            action_items=action_items
+        )
+
+    return render_template(
+        "supplier_view_audit.html",
+        audit=audit,
+        template=template,
+        findings_by_question=findings_by_question,
+        supplier_name=supplier_name,
+        auditor_name=auditor_name,
+        action_items=action_items
     )
 
 

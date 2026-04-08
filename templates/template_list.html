@@ -40,7 +40,7 @@
                 </a></td>
                 <td>{{ template.created_by or '—' }}</td>
                 <td>
-                    {{ template.created_ts.strftime('%Y-%m-%d') if template.created_ts else '' }}
+                    {{ template.created_ts.strftime('%m-%d-%Y') if template.created_ts else '' }}
                 </td>
             </tr>
             {% else %}

@@ -9,7 +9,7 @@ from service.audit_template_service import AuditTemplateService
 class AuditService:
 
     @staticmethod
-    def get_audits_by_supplier(supplier_id):
+    def get_audits_for_supplier(supplier_id):
         conn = psycopg2.connect(**db_config)
         cur = conn.cursor()
 
@@ -17,7 +17,7 @@ class AuditService:
             cur.execute("""
                 SELECT audit_id, auditor_id, supplier_id, total_score, draft, created_ts, last_edited_ts
                 FROM supplieraudit.audit
-                WHERE supplier_id = %s
+                WHERE supplier_id = %s AND draft = 'N'
                 ORDER BY created_ts DESC
             """, (supplier_id,))
 

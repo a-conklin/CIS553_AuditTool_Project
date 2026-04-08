@@ -7,6 +7,7 @@ class Audit:
         self.draft = draft
         self.created_ts = created_ts
         self.last_edited_ts = last_edited_ts
+        self.action_items_pending = 0
 
     @classmethod
     def from_row(cls, row):
