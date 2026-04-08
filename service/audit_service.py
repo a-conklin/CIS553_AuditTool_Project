@@ -138,9 +138,10 @@ class AuditService:
             auditor_name = name_row[1] if name_row else "Unknown Auditor"
 
             cur.execute("""
-                SELECT action_item_id, audit_id, item_text, root_cause,
-                       corrective_action, preventive_action, status, responder_id
-                FROM supplieraudit.action_item
+                SELECT a.action_item_id, a.audit_id, a.item_text, a.root_cause,
+                       a.corrective_action, a.preventive_action, a.status, u.username
+                FROM supplieraudit.action_item a
+                JOIN supplieraudit.users u ON a.responder_id = u.id
                 WHERE audit_id = %s
             """, (audit_id,))
 
