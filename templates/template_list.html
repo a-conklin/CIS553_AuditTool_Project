@@ -24,6 +24,8 @@
         </a>
     </div>
 
+    
+
     <table class="table table-striped table-hover">
         <thead>
             <tr>
@@ -42,6 +44,7 @@
                 <td>
                     {{ template.created_ts.strftime('%m-%d-%Y') if template.created_ts else '' }}
                 </td>
+                <td><button class="btn btn-danger" onclick="deleteTemplate({{ template.template_id }})">Delete</button></td>    
             </tr>
             {% else %}
             <tr>
