@@ -161,3 +161,14 @@ table th {
 .score-green { background-color: green; color: white; }
 .score-cyan { background-color: cyan; color: black; }
 .score-white { background-color: white; color: black; }
+
+.btn {
+            padding: 6px 12px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+.btn-delete { background-color: #ff5555; color: white; }
+.btn-success { background-color: #007bff; color: white; }
