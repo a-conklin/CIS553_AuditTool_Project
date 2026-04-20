@@ -141,7 +141,7 @@ class AuditService:
                 SELECT a.action_item_id, a.audit_id, a.item_text, a.root_cause,
                        a.corrective_action, a.preventive_action, a.status, u.username
                 FROM supplieraudit.action_item a
-                JOIN supplieraudit.users u ON a.responder_id = u.id
+                LEFT JOIN supplieraudit.users u ON a.responder_id = u.id
                 WHERE audit_id = %s
             """, (audit_id,))
 
@@ -222,6 +222,49 @@ class AuditService:
             """, (user_id,))
             rows = cur.fetchall()
             return [Audit.from_row(row) for row in rows]
+        finally:
+            cur.close()
+            conn.close()
+
+    @staticmethod
+    def get_audit_by_id(audit_id):
+        conn = psycopg2.connect(**db_config)
+        cur = conn.cursor()
+        try:
+            cur.execute("""
+                       SELECT audit_id, auditor_id, supplier_id, total_score, draft, created_ts, last_edited_ts
+                       FROM supplieraudit.audit
+                       WHERE audit_id = %s
+                   """, (audit_id,))
+            a_row = cur.fetchone()
+            if not a_row:
+                return None, None, None
+
+            audit = Audit.from_row(a_row)
+            return audit
+        finally:
+            cur.close()
+            conn.close()
+
+    @staticmethod
+    def delete_audit_by_id(audit_id):
+        conn = psycopg2.connect(**db_config)
+        cur = conn.cursor()
+        try:
+            cur.execute("""
+                           DELETE 
+                           FROM supplieraudit.audit
+                           WHERE audit_id = %s and draft = 'Y'
+                       """, (audit_id,))
+
+
+            conn.commit()
+            return {"status": "success"}
+
+        except Exception as e:
+            conn.rollback()
+            return {"status": "error", "message": str(e)}
+
         finally:
             cur.close()
             conn.close()

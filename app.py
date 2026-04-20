@@ -303,6 +303,28 @@ def view_audit(audit_id):
         action_items=action_items
     )
 
+@app.route("/delete_audit/<int:audit_id>")
+def delete_audit(audit_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    if session.get('supplier_id') is not None:
+        return "Unauthorized", 403
+
+    user_id = session["user_id"]
+
+    audit = AuditService.get_audit_by_id(audit_id)
+
+    if not audit:
+        return "Audit not found", 404
+
+    if audit.draft == 'N' or audit.auditor_id != user_id:
+        # Prevent viewing drafts here
+        return "Unauthorized", 403
+
+    AuditService.delete_audit_by_id(audit_id)
+
+    return redirect(url_for("audit_listing"))
+
 @app.route("/audit_listing")
 def audit_listing():
     if "user_id" not in session:
@@ -366,6 +388,8 @@ def supplier_view_audit(audit_id):
 
         # Mark all complete
         ActionItemService.mark_all_complete(audit_id)
+        audit, template, findings_by_question, supplier_name, auditor_name, action_items = \
+            AuditService.get_audit_with_findings(audit_id)
 
         return render_template(
             "supplier_view_audit.html",
