@@ -59,7 +59,7 @@
     <a href="{{ url_for('start_audit') }}" class="btn btn-new">Create New Audit</a>
 
     {% if audits %}
-        <table>
+        <table id="audit-table" class="audit-table">
             <thead>
                 <tr>
                     <th>Audit ID</th>

@@ -17,13 +17,17 @@ def base_page(page):
     return page
 
 @pytest.fixture(scope="function")
-def auth_page(page):
+def admin_auth_page(page):
     page.goto(BASE_URL)
-
     login = LoginPage(page)
     login.login("admin@test.com", "123")
-    #login.wait_for_dashboard()
+    return page
 
+@pytest.fixture(scope="function")
+def user_auth_page(page):
+    page.goto(BASE_URL)
+    login = LoginPage(page)
+    login.login("supplier@test.com", "123")
     return page
 
 @pytest.fixture(scope="function")
@@ -32,15 +36,6 @@ def context(browser):
     yield context
     context.close()
 
-
-# @pytest.fixture(scope="function")
-# def page(context):
-#     page = context.new_page()
-#     page.goto(BASE_URL)
-#     login = LoginPage(page)
-#     login.login("admin@test.com", "123")
-#     assert login.is_logged_in()
-#     return page
 
 @pytest.fixture(scope="session")
 def base_url():

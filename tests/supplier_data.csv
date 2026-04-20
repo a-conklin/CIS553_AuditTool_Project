@@ -1,0 +1,51 @@
+supplier_name,address,city,state,country,zip
+Supplier 1,123 Maple St,Toronto,ON,Canada,M5A1A1
+Supplier 2,456 Oak Ave,Vancouver,BC,Canada,V5K0A1
+Supplier 3,789 Pine Rd,Calgary,AB,Canada,T2P1J9
+Supplier 4,101 Birch Ln,Ottawa,ON,Canada,K1A0B1
+Supplier 5,202 Cedar Blvd,Montreal,QC,Canada,H1A0A1
+Supplier 6,303 Elm St,Edmonton,AB,Canada,T5J0N3
+Supplier 7,404 Spruce Dr,Winnipeg,MB,Canada,R3C0V1
+Supplier 8,505 Willow Way,Halifax,NS,Canada,B3H0A1
+Supplier 9,606 Aspen Ct,Regina,SK,Canada,S4P3Y2
+Supplier 10,707 Poplar Pl,Victoria,BC,Canada,V8W1P6
+Supplier 11,808 Fir St,Quebec City,QC,Canada,G1R5M1
+Supplier 12,909 Redwood Ave,Saskatoon,SK,Canada,S7K0J5
+Supplier 13,111 Palm Rd,St. John's,NL,Canada,A1C5M2
+Supplier 14,222 Cypress Ln,Charlottetown,PE,Canada,C1A7M7
+Supplier 15,333 Magnolia Blvd,Whitehorse,YT,Canada,Y1A2C6
+Supplier 16,444 Sequoia Dr,Yellowknife,NT,Canada,X1A2L9
+Supplier 17,555 Dogwood St,Iqaluit,NU,Canada,X0A0H0
+Supplier 18,666 Alder Ave,London,ON,Canada,N6A3K7
+Supplier 19,777 Chestnut Rd,Hamilton,ON,Canada,L8P1A1
+Supplier 20,888 Hickory Ln,Kitchener,ON,Canada,N2G3W5
+Supplier 21,999 Walnut Blvd,Waterloo,ON,Canada,N2L3G1
+Supplier 22,121 Maple St,Brampton,ON,Canada,L6T3R5
+Supplier 23,232 Oak Ave,Mississauga,ON,Canada,L5B1M5
+Supplier 24,343 Pine Rd,Surrey,BC,Canada,V3T1V8
+Supplier 25,454 Birch Ln,Burnaby,BC,Canada,V5H2Y4
+Supplier 26,565 Cedar Blvd,Richmond,BC,Canada,V6Y2C2
+Supplier 27,676 Elm St,Abbotsford,BC,Canada,V2S3S9
+Supplier 28,787 Spruce Dr,Coquitlam,BC,Canada,V3K3V6
+Supplier 29,898 Willow Way,Laval,QC,Canada,H7N0A1
+Supplier 30,909 Aspen Ct,Gatineau,QC,Canada,J8X3Y7
+Supplier 31,111 Poplar Pl,Longueuil,QC,Canada,J4K1A1
+Supplier 32,222 Fir St,Sherbrooke,QC,Canada,J1H5N4
+Supplier 33,333 Redwood Ave,Trois-Rivieres,QC,Canada,G9A5H3
+Supplier 34,444 Palm Rd,Levis,QC,Canada,G6V6N5
+Supplier 35,555 Cypress Ln,Sudbury,ON,Canada,P3E3M1
+Supplier 36,666 Magnolia Blvd,Thunder Bay,ON,Canada,P7B5E1
+Supplier 37,777 Sequoia Dr,Windsor,ON,Canada,N9A6T3
+Supplier 38,888 Dogwood St,Kingston,ON,Canada,K7L2Z1
+Supplier 39,999 Alder Ave,Peterborough,ON,Canada,K9J2A1
+Supplier 40,121 Chestnut Rd,Moncton,NB,Canada,E1C1E6
+Supplier 41,232 Hickory Ln,Saint John,NB,Canada,E2L4Z6
+Supplier 42,343 Walnut Blvd,Fredericton,NB,Canada,E3B1B2
+Supplier 43,454 Maple St,Red Deer,AB,Canada,T4N1X2
+Supplier 44,565 Oak Ave,Lethbridge,AB,Canada,T1J2C9
+Supplier 45,676 Pine Rd,Medicine Hat,AB,Canada,T1A1A1
+Supplier 46,787 Birch Ln,Kamloops,BC,Canada,V2C3P1
+Supplier 47,898 Cedar Blvd,Prince George,BC,Canada,V2L3C4
+Supplier 48,909 Elm St,Nanaimo,BC,Canada,V9R5J8
+Supplier 49,111 Spruce Dr,Chilliwack,BC,Canada,V2P4N9
+Supplier 50,222 Willow Way,Delta,BC,Canada,V4C2L2
