@@ -388,6 +388,8 @@ def supplier_view_audit(audit_id):
 
         # Mark all complete
         ActionItemService.mark_all_complete(audit_id)
+        audit, template, findings_by_question, supplier_name, auditor_name, action_items = \
+            AuditService.get_audit_with_findings(audit_id)
 
         return render_template(
             "supplier_view_audit.html",

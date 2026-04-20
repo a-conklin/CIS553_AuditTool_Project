@@ -161,7 +161,7 @@ function saveTemplate() {
     .then(data => {
         if (data.status === "success") {
             alert("Template saved!");
-            window.location.href = "templates/template_list";
+            window.location.href = "/list_templates";
         } else {
             alert("Error: " + data.message);
         }
