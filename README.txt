@@ -19,6 +19,8 @@ Directory Structure
 |
 |-/templates            Contains the html templates used by flask to build the pages.
 |
+|-/tests                Contains the test suite and data.
+|
 |-/entity               Contains Entity Classes to model the major objects in the app (see class diagram).
 |
 |-/service              Contains our service classes which handle passing data back and forth between db tables and entity objects.
@@ -27,7 +29,7 @@ Directory Structure
 | |
 | - /stylesheets        Contains our primary css file 'standard.css'. This folder structure is enforced by Flask.
 
-Running the code-
+Running the code and test-
 
 To run this you will need the following installed (likely through pip)
 -Python
@@ -50,4 +52,15 @@ Step 2 - Running the application
         - An auditor named 'admin' who you can login as using 'admin@test.com' with password '123'
         - A supplier user named 'supplier_user' who logs in using 'supplier@test.com' with password '123'
 -Use these two users to explore the full application!
+
+TO TEST THE APP 
+In terminal : run : source test.venv/bin/activate
+                    cd /project /directory 
+                    python3 app.py
+
+In terminal : run : source test.venv/bin/activate
+                    cd /project /directory 
+                    pytest
+                    pytest -v -s (console debug message mode)
+
 
